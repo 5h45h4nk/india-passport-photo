@@ -41,7 +41,7 @@ node --check dist/check-worker.js
 
 ## Limitations
 
-Checks are estimates and do not guarantee passport acceptance. Head coverage uses estimated vertical hair-to-chin height. Natural skin tones, subtle shadows/reflections, religious or medical exceptions, and unobstructed eye visibility cannot be certified. Sunglasses detection is not implemented; landmarks can be estimated behind sunglasses. The background is preserved, not replaced.
+Checks are estimates and do not guarantee passport acceptance. Head coverage uses estimated vertical hair-to-chin height. Natural skin tones, subtle shadows/reflections, religious or medical exceptions, and unobstructed eye visibility cannot be certified. Sunglasses detection is not implemented; landmarks can be estimated behind sunglasses. Optional white-background replacement uses on-device segmentation and may leave halos or remove fine hair; inspect the output. The original image remains available when the option is off.
 
 The app follows the supplied screenshot's requirements; confirm current requirements and upload limits with the relevant application portal.
 
@@ -58,3 +58,7 @@ Pushes to `main` run the analysis tests and deploy `dist/` using `.github/workfl
 Choose **Use camera** and allow camera permission. Microphone access is never requested. Select an available camera from the dropdown; refresh the list after connecting a device. Live frames are sampled for checks about once per second (slower on some devices). The preview stays live independently of analysis. Capture preserves the camera frame at its delivered resolution and the current crop; the camera stops, and checks rerun on the still photo. Camera access also stops on Stop camera, upload mode, tab hiding, page exit, or disconnection.
 
 For an iPhone webcam on a Mac, set up [Apple Continuity Camera](https://support.apple.com/en-us/102546). The iPhone must be exposed by the OS and browser to appear in the selector. If the in-app browser does not offer camera access, open the GitHub Pages URL in Safari or Chrome. Use an even white backdrop; disable portrait blur or other camera effects. Capture is from the browser video stream, not the iPhone’s full-resolution native Camera app.
+
+## White background option
+
+Enable **Make background white** for an uploaded or captured still. The existing portrait segmentation model supplies background probabilities; foreground colors are retained and uncertain edges feather onto white. The final composited pixels are used by the checks and download. Export is disabled until replacement completes; turn the option off to restore the original crop. In camera mode, replacement applies after capture; live preview and live checks use the original camera frame. Fine hair, translucent items and complex backgrounds can produce artifacts.
