@@ -2,6 +2,8 @@
 
 A browser-based Indian passport photo cropper built around supplied 630 × 810 pixel guidelines.
 
+Live app: https://5h45h4nk.github.io/india-passport-photo/
+
 ## Features
 
 - Upload JPG, PNG, or WebP, drag to position, and zoom.
@@ -45,3 +47,7 @@ The app follows the supplied screenshot's requirements; confirm current requirem
 ## Third-party assets
 
 MediaPipe Tasks Vision 0.10.22-rc.20250304 and its WebAssembly runtime are bundled under `dist/vendor/`; see `dist/vendor/LICENSE`. Models are Google's MediaPipe Face Landmarker and Selfie Multiclass 256 × 256, downloaded from Google's MediaPipe model distribution. The UI uses Google Fonts when available, with local font fallbacks.
+
+## GitHub Pages deployment
+
+Pushes to `main` run the analysis tests and deploy `dist/` using `.github/workflows/deploy-pages.yml`. No server or secrets are needed. All worker, model, and runtime paths are relative so the app works under the repository URL.
