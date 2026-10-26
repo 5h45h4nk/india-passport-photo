@@ -66,3 +66,7 @@ Enable **Make background white** for an uploaded or captured still. The existing
 ## Automatic framing
 
 New uploads and captured stills auto-frame by default; disable **Auto-frame new photos** to retain your own crop. **Auto-frame** analyzes the full original photo with the existing model worker, estimates the hair-to-chin bounds, and aims for 82.5% vertical head coverage with horizontal centering. Wide hair, image edges, and the 4× zoom limit can constrain the result. It does not reconstruct clipped hair or chin, and leaves uncertain or multiple-face cases for manual framing. Dragging or adjusting zoom cancels a pending automatic adjustment. Checks and optional white-background replacement rerun after the crop changes.
+
+## Camera resolution
+
+The app requests high ideal dimensions without a fixed aspect ratio, then queries the selected track’s width/height capabilities and requests the reported maximums with ideal constraints. It prefers native frames and a modest frame rate over 1080p video. If capability negotiation is unsupported or rejected, the working stream remains usable. The actual original dimensions are shown above Zoom. Capture keeps the delivered video frame resolution; browser video limits may be lower than the native iPhone Camera app’s still-photo resolution.

@@ -9,16 +9,28 @@ export class CameraController {
     if(!this.supported)throw Object.assign(new Error('Camera API unavailable'),{name:'NotSupportedError'});
     const generation=++this.generation;this.release();let stream;
     try{
-      const video={width:{ideal:1920},height:{ideal:1080},...(facingMode?{facingMode:{exact:facingMode}}:deviceId?{deviceId:{exact:deviceId}}:{facingMode:{ideal:'user'}})};
+      const video={width:{ideal:8192},height:{ideal:8192},frameRate:{ideal:15},resizeMode:{ideal:'none'},...(facingMode?{facingMode:{exact:facingMode}}:deviceId?{deviceId:{exact:deviceId}}:{facingMode:{ideal:'user'}})};
       stream=await this.mediaDevices.getUserMedia({audio:false,video});
       if(generation!==this.generation){stream.getTracks().forEach(track=>track.stop());return null;}
-      this.stream=stream;this.video.srcObject=stream;
+      this.stream=stream;
+      const track=stream.getVideoTracks()[0];
+      // Ask the selected track for its reported maximums. Ideal constraints allow
+      // the browser to choose a supported width/height combination without failing.
+      if(track.getCapabilities&&track.applyConstraints){
+        try{const caps=track.getCapabilities(),width=caps.width?.max,height=caps.height?.max;
+          if(Number.isFinite(width)&&width>0&&Number.isFinite(height)&&height>0){
+            const maximum={...video,width:{ideal:width},height:{ideal:height}};
+            try{await track.applyConstraints(maximum);}catch{if(generation!==this.generation){stream.getTracks().forEach(t=>t.stop());return null;}const compatible={...maximum};delete compatible.resizeMode;delete compatible.frameRate;try{await track.applyConstraints(compatible);}catch{/* Keep the already working stream if maximum negotiation is rejected. */}}
+          }
+        }catch{/* Capability APIs are optional; the initial request already prefers high resolution. */}
+      }
+      if(generation!==this.generation){stream.getTracks().forEach(t=>t.stop());return null;}
+      this.video.srcObject=stream;
       await this.video.play();
       if(generation!==this.generation){stream.getTracks().forEach(track=>track.stop());return null;}
       if(!this.video.videoWidth||!this.video.videoHeight){await new Promise((resolve,reject)=>{const done=()=>{cleanup();resolve();};const fail=()=>{cleanup();reject(new Error('Camera has no usable frames'));};const timer=setTimeout(fail,15000);const cleanup=()=>{clearTimeout(timer);this.video.removeEventListener('loadeddata',done);this.video.removeEventListener('error',fail);};this.video.addEventListener('loadeddata',done,{once:true});this.video.addEventListener('error',fail,{once:true});});}
       if(generation!==this.generation)return null;
       if(!this.video.videoWidth||!this.video.videoHeight)throw new Error('Camera has no usable frames');
-      const track=stream.getVideoTracks()[0];
       track.addEventListener('ended',()=>{if(this.stream!==stream)return;this.stop();this.onEnded();},{once:true});
       return {width:this.video.videoWidth,height:this.video.videoHeight,deviceId:track.getSettings?.().deviceId||deviceId||'',facingMode:track.getSettings?.().facingMode||facingMode||''};
     }catch(error){stream?.getTracks().forEach(track=>track.stop());if(generation!==this.generation)return null;this.release();throw error;}

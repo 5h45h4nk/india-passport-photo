@@ -2,7 +2,7 @@
 export function assess({width,height,pixels,faceResult,mask,maskWidth,maskHeight,sourceWidth,sourceHeight,upscaled=false}) {
   const rows=[];const add=(id,title,status,detail)=>rows.push({id,title,status,detail});
   add('size','Output dimensions',width===630&&height===810?'pass':'warn',`${width} × ${height} pixels; required output is 630 × 810.`);
-  add('resolution','Original image detail',upscaled?'warn':'pass',upscaled?'This crop enlarges the source pixels. Use a higher-resolution original for better detail.':`The crop has sufficient source pixels (${sourceWidth} × ${sourceHeight} original).`);
+  add('resolution','Original image detail',upscaled?'warn':'pass',upscaled?`${sourceWidth} × ${sourceHeight} px original. This crop enlarges the source pixels. Use a higher-resolution original or reduce zoom for better detail.`:`The crop has sufficient source pixels (${sourceWidth} × ${sourceHeight} original).`);
   const faces=faceResult.faceLandmarks||[];
   add('faces','One visible face',faces.length===1?'pass':'warn',faces.length===0?'No face detected. Use a clear, front-facing portrait, or zoom out if the face is cut off.':faces.length>1?'More than one face detected. Crop to include only the applicant.':'One face detected in the crop.');
   const maskAt=(x,y)=>mask?.[Math.min(maskHeight-1,Math.max(0,Math.floor(y*maskHeight)))*maskWidth+Math.min(maskWidth-1,Math.max(0,Math.floor(x*maskWidth)))];
