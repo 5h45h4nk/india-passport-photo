@@ -27,9 +27,10 @@ jobs:
           node-version: '22'
       - name: Validate photo analysis
         run: |
-          node --test tests/analysis.test.mjs
+          node --test tests/*.test.mjs
           node --check dist/app.js
           node --check dist/check-worker.js
+          node --check dist/camera.mjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

@@ -7,6 +7,7 @@ Live app: https://5h45h4nk.github.io/india-passport-photo/
 ## Features
 
 - Upload JPG, PNG, or WebP, drag to position, and zoom.
+- Use a webcam with live on-device checks, choose a camera (including iPhone Continuity Camera when exposed by the browser), and capture a still.
 - Export exactly 630 × 810 pixels as JPG or PNG.
 - Run advisory checks for face count, head coverage, centering, pose, open eyes, expression, background, lighting, red-eye, and sharpness.
 - View warnings beside the photo; passing checks are collapsed.
@@ -27,7 +28,7 @@ Open http://localhost:4173. Serve over HTTP locally or HTTPS when hosted; openin
 Requires Node.js:
 
 ```sh
-node --test tests/analysis.test.mjs
+node --test tests/*.test.mjs
 node --check dist/app.js
 node --check dist/check-worker.js
 ```
@@ -51,3 +52,9 @@ MediaPipe Tasks Vision 0.10.22-rc.20250304 and its WebAssembly runtime are bundl
 ## GitHub Pages deployment
 
 Pushes to `main` run the analysis tests and deploy `dist/` using `.github/workflows/deploy-pages.yml`. No server or secrets are needed. All worker, model, and runtime paths are relative so the app works under the repository URL.
+
+## Camera capture
+
+Choose **Use camera** and allow camera permission. Microphone access is never requested. Select an available camera from the dropdown; refresh the list after connecting a device. Live frames are sampled for checks about once per second (slower on some devices). The preview stays live independently of analysis. Capture preserves the camera frame at its delivered resolution and the current crop; the camera stops, and checks rerun on the still photo. Camera access also stops on Stop camera, upload mode, tab hiding, page exit, or disconnection.
+
+For an iPhone webcam on a Mac, set up [Apple Continuity Camera](https://support.apple.com/en-us/102546). The iPhone must be exposed by the OS and browser to appear in the selector. If the in-app browser does not offer camera access, open the GitHub Pages URL in Safari or Chrome. Use an even white backdrop; disable portrait blur or other camera effects. Capture is from the browser video stream, not the iPhone’s full-resolution native Camera app.
