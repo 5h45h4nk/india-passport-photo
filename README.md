@@ -62,3 +62,7 @@ For an iPhone webcam on a Mac, set up [Apple Continuity Camera](https://support.
 ## White background option
 
 Enable **Make background white** for an uploaded or captured still. The existing portrait segmentation model supplies background probabilities; foreground colors are retained and uncertain edges feather onto white. The final composited pixels are used by the checks and download. Export is disabled until replacement completes; turn the option off to restore the original crop. In camera mode, replacement applies after capture; live preview and live checks use the original camera frame. Fine hair, translucent items and complex backgrounds can produce artifacts.
+
+## Automatic framing
+
+New uploads and captured stills auto-frame by default; disable **Auto-frame new photos** to retain your own crop. **Auto-frame** analyzes the full original photo with the existing model worker, estimates the hair-to-chin bounds, and aims for 82.5% vertical head coverage with horizontal centering. Wide hair, image edges, and the 4× zoom limit can constrain the result. It does not reconstruct clipped hair or chin, and leaves uncertain or multiple-face cases for manual framing. Dragging or adjusting zoom cancels a pending automatic adjustment. Checks and optional white-background replacement rerun after the crop changes.
