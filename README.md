@@ -74,3 +74,7 @@ The app requests high ideal dimensions without a fixed aspect ratio, then querie
 ## Dedicated camera panel
 
 **Use camera** opens a modal capture workspace with a large preview, live pass/fail results, camera flip/settings, and an always-visible capture button. On phones it fills the viewport; desktop uses side-by-side preview and checks. Capture stops the camera, restores the editor controls, and triggers auto-framing when enabled. Closing or pressing Escape stops capture and restores the previous crop. The panel reuses the existing canvas and model worker.
+
+## Camera zoom
+
+The capture panel offers a separate **Camera zoom** slider and quick levels when the active track advertises a variable zoom capability. Only levels within the reported range are offered; settings preserve existing resolution constraints and display the applied zoom returned by the browser. Device-controlled zoom may be digital and does not guarantee access to every native iPhone lens. Unsupported browsers show an explanation and retain the separate **Crop zoom** control.
