@@ -70,3 +70,7 @@ New uploads and captured stills auto-frame by default; disable **Auto-frame new 
 ## Camera resolution
 
 The app requests high ideal dimensions without a fixed aspect ratio, then queries the selected track’s width/height capabilities and requests the reported maximums with ideal constraints. It prefers native frames and a modest frame rate over 1080p video. If capability negotiation is unsupported or rejected, the working stream remains usable. The actual original dimensions are shown above Zoom. Capture keeps the delivered video frame resolution; browser video limits may be lower than the native iPhone Camera app’s still-photo resolution.
+
+## Dedicated camera panel
+
+**Use camera** opens a modal capture workspace with a large preview, live pass/fail results, camera flip/settings, and an always-visible capture button. On phones it fills the viewport; desktop uses side-by-side preview and checks. Capture stops the camera, restores the editor controls, and triggers auto-framing when enabled. Closing or pressing Escape stops capture and restores the previous crop. The panel reuses the existing canvas and model worker.
