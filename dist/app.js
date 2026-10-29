@@ -1,3 +1,4 @@
+import {createPrintPdf} from './print-sheet.mjs?v=18';
 import {createCameraPanel} from './camera-panel.mjs?v=14';
 import {fitHead} from './framing.mjs?v=12';
 import {CameraController,cameraError} from './camera.mjs?v=17';
@@ -11,7 +12,7 @@ let cameraMode=false,live=false,cameraEpoch=0,previewFrame=null,liveTimer=null,p
 let backgroundImage=null,backgroundRevision=-1;
 const rawCanvas=document.createElement('canvas');rawCanvas.width=630;rawCanvas.height=810;const rawCtx=rawCanvas.getContext('2d');
 const whiteOn=()=>$('white-background').checked;
-function updateDownload(){ $('download').disabled=!photo||cameraMode||autoFrameBusy||(whiteOn()&&backgroundRevision!==revision); }
+function updateDownload(){ $('download-print').disabled=$('download').disabled=!photo||cameraMode||autoFrameBusy||(whiteOn()&&backgroundRevision!==revision); }
 const video=$('camera-video');
 const camera=new CameraController({video,onEnded:()=>{stopCamera();$('status').textContent='Camera disconnected. Reconnect it and choose Use camera to try again.';}});
 const cameraPanel=createCameraPanel({dialog:$('camera-panel'),onExit:exitCameraPanel,entries:[[$('drop'),$('panel-preview')],[$('camera-settings'),$('panel-camera-settings')],[$('camera-status'),$('panel-status')],[$('camera-actions'),$('panel-actions')],[document.querySelector('.sliderline'),$('panel-adjust')],[document.querySelector('.bottomcontrols'),$('panel-guides')],[document.querySelector('.auto-checks'),$('panel-checks')]]});
@@ -78,3 +79,17 @@ $('auto-frame').onclick=requestAutoFrame;
 function syncCameraZoom(){const range=live?camera.zoomRange():null;$('camera-zoom-controls').hidden=!range;$('camera-zoom-unavailable').hidden=!live||!!range;$('camera-zoom').disabled=!range;if(!range)return;const slider=$('camera-zoom');slider.min=range.min;slider.max=range.max;slider.step=range.step;if(!cameraZoomBusy)slider.value=range.value;$('camera-zoom-value').textContent=`${Number(range.value.toFixed(2))}×`;$('camera-zoom-presets').replaceChildren();for(const value of [.5,1,2,3,5]){if(value<range.min||value>range.max)continue;const button=document.createElement('button');button.type='button';button.className='zoom-preset';button.textContent=`${value}×`;button.setAttribute('aria-pressed',String(Math.abs(range.value-value)<range.step/2+.001));button.onclick=()=>queueCameraZoom(value);$('camera-zoom-presets').append(button);}}
 async function queueCameraZoom(value){cameraZoomPending=Number(value);if(cameraZoomBusy)return;cameraZoomBusy=true;const epoch=cameraEpoch;while(cameraZoomPending!==null&&live&&epoch===cameraEpoch){const desired=cameraZoomPending;cameraZoomPending=null;try{const actual=await camera.setZoom(desired);if(actual===null||epoch!==cameraEpoch)break;$('camera-zoom-value').textContent=`${Number(actual.toFixed(2))}×`;$('camera-zoom').value=actual;$('camera-zoom-hint').textContent='Device-controlled zoom may be digital. Check image detail before capture.';draw();}catch{if(epoch===cameraEpoch){$('camera-zoom-hint').textContent='Camera zoom could not be changed. Crop zoom remains available.';cameraZoomPending=null;break;}}}cameraZoomBusy=false;cameraZoomPending=null;if(live)syncCameraZoom();}
 $('camera-zoom').oninput=event=>queueCameraZoom(event.target.value);
+
+$('download-print').onclick=async()=>{
+  if($('download-print').disabled)return;
+  draw(false);
+  try {
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.98));
+    if(!blob)throw new Error('Export failed');
+    const pdf=createPrintPdf(new Uint8Array(await blob.arrayBuffer()));
+    const u=URL.createObjectURL(new Blob([pdf],{type:'application/pdf'}));
+    const link=document.createElement('a');link.href=u;link.download='indian-passport-4x6-four-35x45mm.pdf';link.click();
+    setTimeout(()=>URL.revokeObjectURL(u),10000);
+    $('status').textContent='Print sheet downloaded: 4 copies at 35 × 45 mm. Select 4 × 6-inch paper and Actual size / 100%; disable Fit to page.';
+  } catch { $('status').textContent='Print sheet export failed. Please try again.'; }
+};

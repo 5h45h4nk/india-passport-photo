@@ -9,6 +9,7 @@ Live app: https://5h45h4nk.github.io/india-passport-photo/
 - Upload JPG, PNG, or WebP, drag to position, and zoom.
 - Use a webcam with live on-device checks, choose a camera (including iPhone Continuity Camera when exposed by the browser), and capture a still.
 - Export exactly 630 × 810 pixels as JPG or PNG.
+- Download a 4 × 6-inch PDF containing four 35 × 45 mm copies of the current crop. Print on 4 × 6-inch paper at Actual size / 100%, with Fit to page disabled.
 - Run advisory checks for face count, head coverage, centering, pose, open eyes, expression, background, lighting, red-eye, and sharpness.
 - View warnings beside the photo; passing checks are collapsed.
 - Process photos on-device using MediaPipe models and WebAssembly in a browser worker. Photos are not uploaded.
