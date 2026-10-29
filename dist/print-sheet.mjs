@@ -27,3 +27,27 @@ export function createPrintPdf(jpeg, imageWidth=630, imageHeight=810) {
   append(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
   const output=new Uint8Array(length);let at=0;for(const part of parts){output.set(part,at);at+=part.length;}return output;
 }
+
+export function renderPrintSheet(context, photo) {
+  const layout=printLayout(), scale=300/72;
+  context.fillStyle='#fff';context.fillRect(0,0,1200,1800);
+  context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';
+  for(const {x,y} of layout.copies)context.drawImage(photo,x*scale,(layout.pageHeight-y-layout.height)*scale,layout.width*scale,layout.height*scale);
+}
+
+// Canvas JPEG encoders commonly use 96 DPI; write explicit 300 DPI JFIF density.
+export function setPrintJpegDensity(bytes) {
+  if(bytes[0]!==255||bytes[1]!==216)throw new Error('Invalid JPEG');
+  const result=bytes.slice();
+  for(let at=2;at+4<result.length;) {
+    if(result[at]!==255)break;
+    const marker=result[at+1];if(marker===218||marker===217)break;
+    const size=(result[at+2]<<8)|result[at+3];if(size<2||at+size+2>result.length)break;
+    if(marker===224&&size>=16&&result[at+4]===74&&result[at+5]===70&&result[at+6]===73&&result[at+7]===70&&result[at+8]===0) {
+      result[at+11]=1;result[at+12]=1;result[at+13]=44;result[at+14]=1;result[at+15]=44;return result;
+    }
+    at+=size+2;
+  }
+  const jfif=new Uint8Array([255,224,0,16,74,70,73,70,0,1,1,1,1,44,1,44,0,0]);
+  const output=new Uint8Array(bytes.length+jfif.length);output.set(bytes.subarray(0,2));output.set(jfif,2);output.set(bytes.subarray(2),2+jfif.length);return output;
+}

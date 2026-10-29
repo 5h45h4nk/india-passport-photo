@@ -1,4 +1,4 @@
-import {createPrintPdf} from './print-sheet.mjs?v=18';
+import {createPrintPdf,renderPrintSheet,setPrintJpegDensity} from './print-sheet.mjs?v=19';
 import {createCameraPanel} from './camera-panel.mjs?v=14';
 import {fitHead} from './framing.mjs?v=12';
 import {CameraController,cameraError} from './camera.mjs?v=17';
@@ -12,7 +12,7 @@ let cameraMode=false,live=false,cameraEpoch=0,previewFrame=null,liveTimer=null,p
 let backgroundImage=null,backgroundRevision=-1;
 const rawCanvas=document.createElement('canvas');rawCanvas.width=630;rawCanvas.height=810;const rawCtx=rawCanvas.getContext('2d');
 const whiteOn=()=>$('white-background').checked;
-function updateDownload(){ $('download-print').disabled=$('download').disabled=!photo||cameraMode||autoFrameBusy||(whiteOn()&&backgroundRevision!==revision); }
+function updateDownload(){ $('download-print-jpg').disabled=$('download-print').disabled=$('download').disabled=!photo||cameraMode||autoFrameBusy||(whiteOn()&&backgroundRevision!==revision); }
 const video=$('camera-video');
 const camera=new CameraController({video,onEnded:()=>{stopCamera();$('status').textContent='Camera disconnected. Reconnect it and choose Use camera to try again.';}});
 const cameraPanel=createCameraPanel({dialog:$('camera-panel'),onExit:exitCameraPanel,entries:[[$('drop'),$('panel-preview')],[$('camera-settings'),$('panel-camera-settings')],[$('camera-status'),$('panel-status')],[$('camera-actions'),$('panel-actions')],[document.querySelector('.sliderline'),$('panel-adjust')],[document.querySelector('.bottomcontrols'),$('panel-guides')],[document.querySelector('.auto-checks'),$('panel-checks')]]});
@@ -92,4 +92,20 @@ $('download-print').onclick=async()=>{
     setTimeout(()=>URL.revokeObjectURL(u),10000);
     $('status').textContent='Print sheet downloaded: 4 copies at 35 × 45 mm. Select 4 × 6-inch paper and Actual size / 100%; disable Fit to page.';
   } catch { $('status').textContent='Print sheet export failed. Please try again.'; }
+};
+
+$('download-print-jpg').onclick=async()=>{
+  if($('download-print-jpg').disabled)return;
+  draw(false);
+  const sheet=document.createElement('canvas');sheet.width=1200;sheet.height=1800;
+  renderPrintSheet(sheet.getContext('2d'),canvas);
+  try {
+    const blob=await new Promise(resolve=>sheet.toBlob(resolve,'image/jpeg',.98));
+    if(!blob)throw new Error('Export failed');
+    const bytes=setPrintJpegDensity(new Uint8Array(await blob.arrayBuffer()));
+    const u=URL.createObjectURL(new Blob([bytes],{type:'image/jpeg'}));
+    const link=document.createElement('a');link.href=u;link.download='indian-passport-4x6-four-35x45mm-300ppi.jpg';link.click();
+    setTimeout(()=>URL.revokeObjectURL(u),10000);
+    $('status').textContent='JPG print sheet downloaded: 1200 × 1800 px at 300 PPI. Order a 4 × 6-inch print with cropping and enlargement disabled.';
+  } catch { $('status').textContent='JPG print sheet export failed. Please try again.'; }
 };
