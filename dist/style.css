@@ -54,3 +54,5 @@
 .print-option{margin-top:24px;padding-top:20px;border-top:1px solid #d6ded7}.print-option h3{margin:0 0 8px}.print-option p{line-height:1.5}.print-option .download{white-space:normal}
 
 #download-print-jpg{margin-top:10px}
+
+.coverage-control{display:flex;align-items:center;gap:12px;margin:12px 0 6px}.coverage-control label{font-size:12px;flex:1}.coverage-control select{width:auto;max-width:55%;margin:0}

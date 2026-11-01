@@ -5,3 +5,26 @@ test('wide hair is kept within frame even when height target cannot be met',()=>
 test('zoom cap and image boundaries are respected',()=>{const h={top:.02,bottom:.06,left:.03,right:.05,cx:.04};const f=fitHead(3000,4000,h);assert.equal(f.scale,4);assert.ok(Math.abs(f.x)<=(3000*f.base*f.scale-630)/2+.0001);assert.ok(Math.abs(f.y)<=(4000*f.base*f.scale-810)/2+.0001);assert.equal(f.limited,true);});
 test('invalid geometry is rejected',()=>{assert.equal(fitHead(0,2000,head),null);assert.equal(fitHead(1000,1200,{error:'No face'}),null);assert.equal(fitHead(1000,1200,{...head,bottom:.1}),null);});
 test('missing, multiple or uncertain heads are not guessed',()=>{const mask=new Uint8Array(10000);assert.match(headBounds({faceLandmarks:[]},mask,100,100).error,/No face/);assert.match(headBounds({faceLandmarks:[[],[]]},mask,100,100).error,/one person/);const face=Array.from({length:478},()=>({x:.5,y:.5}));face[10]={x:.5,y:.3};face[152]={x:.5,y:.8};face[234]={x:.3,y:.5};face[454]={x:.7,y:.5};assert.match(headBounds({faceLandmarks:[face]},mask,100,100).error,/reliably/);for(let y=10;y<80;y++)for(let x=30;x<70;x++)mask[y*100+x]=y<30?1:3;const h=headBounds({faceLandmarks:[face]},mask,100,100);assert.equal(h.top,.1);assert.equal(h.bottom,.8);for(let y=0;y<10;y++)for(let x=30;x<70;x++)mask[y*100+x]=1;assert.match(headBounds({faceLandmarks:[face]},mask,100,100).error,/cut off/);});
+
+test('all coverage choices reach their selected target when the source allows it',()=>{
+ for(const target of [.75,.775,.8,.825,.85,.875,.9]){
+  const fit=fitHead(1600,2000,head,4,target);
+  assert.ok(Math.abs(fit.coverage-target)<1e-9);assert.equal(fit.limited,false);
+ }
+ assert.equal(fitHead(1600,2000,head,4,.95),null);
+ assert.equal(fitHead(1600,2000,head,4,NaN),null);
+});
+test('eye-line correction levels clockwise and anticlockwise tilt in pixel space',async()=>{
+ const {levelingAngle,rotatedSize}=await import('../dist/framing.mjs');
+ for(const degrees of [-15,0,12]){
+  const face=[];face[33]={x:.3,y:.4};face[263]={x:.7,y:.4+Math.tan(degrees*Math.PI/180)*.4*1600/2000};
+  const angle=levelingAngle({faceLandmarks:[face]},1600,2000);
+  assert.ok(Math.abs(angle+degrees*Math.PI/180)<1e-10);
+  const dx=640,dy=(face[263].y-face[33].y)*2000;
+  assert.ok(Math.abs(dx*Math.sin(angle)+dy*Math.cos(angle))<1e-8);
+  const size=rotatedSize(1600,2000,angle);
+  assert.ok(size.width>=1600&&size.height>=2000);
+ }
+ assert.equal(levelingAngle({faceLandmarks:[]},1600,2000),0);
+ assert.equal(levelingAngle({faceLandmarks:[[],[]]},1600,2000),0);
+});
