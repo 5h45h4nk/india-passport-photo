@@ -7,6 +7,16 @@ export function printLayout() {
   return {pageWidth:288, pageHeight:432, width, height,
     copies:[0,1].flatMap(row => [0,1].map(col => ({x:left+col*(width+gap), y:bottom+row*(height+gap)})))};
 }
+// Marks align with the trim edges but stay outside every finished photo.
+export function cutMarks() {
+  const layout=printLayout(), gap=mm(.7), length=mm(1.5);
+  return layout.copies.flatMap(({x,y})=>[0,1].flatMap(col=>[0,1].flatMap(row=>{
+    const cx=x+col*layout.width, cy=y+row*layout.height;
+    const dx=col?1:-1, dy=row?1:-1;
+    return [[cx+dx*gap,cy,cx+dx*(gap+length),cy],
+      [cx,cy+dy*gap,cx,cy+dy*(gap+length)]];
+  })));
+}
 export function createPrintPdf(jpeg, imageWidth=630, imageHeight=810) {
   const enc = new TextEncoder(), parts=[], offsets=[0]; let length=0;
   const append = value => {const bytes=typeof value==='string'?enc.encode(value):value;parts.push(bytes);length+=bytes.length;};
@@ -19,7 +29,8 @@ export function createPrintPdf(jpeg, imageWidth=630, imageHeight=810) {
   offsets[4]=length;
   append(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${imageWidth} /Height ${imageHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`);
   append(jpeg);append('\nendstream\nendobj\n');
-  const commands=layout.copies.map(({x,y})=>`q ${n(layout.width)} 0 0 ${n(layout.height)} ${n(x)} ${n(y)} cm /Photo Do Q\n`).join('');
+  const marks='q 0.5 G 0.3 w\n'+cutMarks().map(([x1,y1,x2,y2])=>`${n(x1)} ${n(y1)} m ${n(x2)} ${n(y2)} l S\n`).join('')+'Q\n';
+  const commands=marks+layout.copies.map(({x,y})=>`q ${n(layout.width)} 0 0 ${n(layout.height)} ${n(x)} ${n(y)} cm /Photo Do Q\n`).join('');
   object(5,`<< /Length ${enc.encode(commands).length} >>\nstream\n${commands}endstream`);
   const xref=length;
   append('xref\n0 6\n0000000000 65535 f \n');
@@ -32,6 +43,9 @@ export function renderPrintSheet(context, photo) {
   const layout=printLayout(), scale=300/72;
   context.fillStyle='#fff';context.fillRect(0,0,1200,1800);
   context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';
+  context.save();context.strokeStyle='#808080';context.lineWidth=.3*scale;context.beginPath();
+  for(const [x1,y1,x2,y2] of cutMarks()){context.moveTo(x1*scale,(layout.pageHeight-y1)*scale);context.lineTo(x2*scale,(layout.pageHeight-y2)*scale);}
+  context.stroke();context.restore();
   for(const {x,y} of layout.copies)context.drawImage(photo,x*scale,(layout.pageHeight-y-layout.height)*scale,layout.width*scale,layout.height*scale);
 }
 

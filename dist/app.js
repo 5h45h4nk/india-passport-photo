@@ -1,4 +1,4 @@
-import {createPrintPdf,renderPrintSheet,setPrintJpegDensity} from './print-sheet.mjs?v=19';
+import {createPrintPdf,renderPrintSheet,setPrintJpegDensity} from './print-sheet.mjs?v=20';
 import {createCameraPanel} from './camera-panel.mjs?v=14';
 import {fitHead} from './framing.mjs?v=12';
 import {CameraController,cameraError} from './camera.mjs?v=17';

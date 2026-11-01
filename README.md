@@ -80,3 +80,5 @@ The app requests high ideal dimensions without a fixed aspect ratio, then querie
 ## Camera zoom
 
 The capture panel offers a separate **Camera zoom** slider and quick levels when the active track advertises a variable zoom capability. Only levels within the reported range are offered; settings preserve existing resolution constraints and display the applied zoom returned by the browser. Device-controlled zoom may be digital and does not guarantee access to every native iPhone lens. Unsupported browsers show an explanation and retain the separate **Crop zoom** control.
+
+Both print sheet formats include gray corner cut marks outside each photo, aligned with its 35 × 45 mm trim edges.
